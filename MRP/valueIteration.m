@@ -16,8 +16,7 @@ actions = [
           ]; 
 
 discountFactor = 0.5;
-probabilityCorrectAction = 0.8;
-probabilityWrongAction = 0.1; % 2 possible incorrect actions (right angle)
+probabilityForMoveInEachDirection = 1 / size(actions, 1); % 4 possible directions to move in
 rewardPerTimeStep = -0.04;
 tolerance = 1e-5;
        
@@ -59,7 +58,7 @@ while ~converged
             % Only update values specified locations
             if maze(i, j)
                 % Iterate over all the actions
-                maxReward = -realmax;
+                reward = 0;
                 for k = 1 : size(actions, 1)
                     % Add reward for correct action
                     action = actions(k, :);
@@ -72,37 +71,11 @@ while ~converged
                         jNew = j;
                     end
 
-                    reward = previousUtilities(iNew, jNew) * probabilityCorrectAction;
-
-                    % Add reward for incorrect action (stochastic environment)
-                    if k < 3
-                        incorrectActions = [3, 4];
-                    else
-                        incorrectActions = [1, 2];
-                    end
-
-                    for z = incorrectActions
-                        action = actions(z, :);
-                        iNew = i + action(1);
-                        jNew = j + action(2);
-
-                        if (iNew > size(maze, 1)) || (iNew < 1)
-                            iNew = i;
-                        elseif (jNew > size(maze, 2)) || (jNew < 1)
-                            jNew = j;
-                        end
-
-                        reward = reward + previousUtilities(iNew, jNew) * probabilityWrongAction;
-                    end
-
-                    % Save reward in maxReward if best action
-                    if reward > maxReward
-                        maxReward = reward;
-                    end
+                    reward = reward + previousUtilities(iNew, jNew) * probabilityForMoveInEachDirection;
                 end
 
                 % Update the utility
-                utilities(i, j) = rewardPerTimeStep + discountFactor * maxReward;
+                utilities(i, j) = rewardPerTimeStep + discountFactor * reward;
             end
         end
     end

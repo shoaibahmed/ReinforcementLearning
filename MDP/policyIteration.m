@@ -1,3 +1,6 @@
+% Include utils
+addpath('../utils');
+
 % Create a maze
 maze = [
             true, true, true, false
