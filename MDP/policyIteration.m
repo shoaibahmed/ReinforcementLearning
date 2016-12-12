@@ -20,6 +20,7 @@ probabilityCorrectAction = 0.8;
 probabilityWrongAction = 0.1; % 2 possible incorrect actions (right angle)
 rewardPerTimeStep = -0.04;
 tolerance = 1e-5;
+unicodeSymbolsForActions = {0, 8594, 8592, 8593, 8595}; % Unicode values for symbols to be used in visualization
        
 % Define the value function
 v = [
@@ -42,7 +43,7 @@ while ~converged
     % Visualize the value function
     close all;
     plotValues(v, strcat(['Value Function (', num2str(iterations), ' iterations)']));
-    plotValues(policy, strcat(['Policy (', num2str(iterations), ' iterations)']));
+    plotValues(policy, strcat(['Policy (', num2str(iterations), ' iterations)']), unicodeSymbolsForActions);
     w = waitforbuttonpress; % 0 for button click and 1 for key press
     if w == 1
         break;
