@@ -21,14 +21,14 @@ probabilityWrongAction = 0.1; % 2 possible incorrect actions (right angle)
 rewardPerTimeStep = -0.04;
 tolerance = 1e-5;
        
-% Define the utility function
-utilities = [
-                0, 0, 0, 1
-                0, 0, 0, -1
-                0, 0, 0, 0
-            ];
+% Define the value function
+v = [
+        0, 0, 0, 1
+        0, 0, 0, -1
+        0, 0, 0, 0
+    ];
         
-previousUtilities = zeros(size(maze));
+previousV = zeros(size(maze));
 
 % Define random policy
 policy = randi([1, size(actions, 1)], size(maze));
@@ -39,9 +39,9 @@ previousPolicy = zeros(size(maze));
 converged = false;
 iterations = 0;
 while ~converged
-    % Visualize the utilities
+    % Visualize the value function
     close all;
-    plotValues(utilities, strcat(['Value Function (', num2str(iterations), ' iterations)']));
+    plotValues(v, strcat(['Value Function (', num2str(iterations), ' iterations)']));
     plotValues(policy, strcat(['Policy (', num2str(iterations), ' iterations)']));
     w = waitforbuttonpress; % 0 for button click and 1 for key press
     if w == 1
@@ -53,14 +53,14 @@ while ~converged
         converged = true;
         break;
     end
-%     delta = abs(previousUtilities - utilities);
+%     delta = abs(previousV - v);
 %     if sum(delta(:)) < tolerance
 %         converged = true;
 %         break;
 %     end
     
-    % Use previous utilities for calculation
-    previousUtilities = utilities;
+    % Use previous v for calculation
+    previousV = v;
     previousPolicy = policy;
     
     % Update the utlities
@@ -83,7 +83,7 @@ while ~converged
                     jNew = j;
                 end
 
-                reward = previousUtilities(iNew, jNew) * probabilityCorrectAction;
+                reward = previousV(iNew, jNew) * probabilityCorrectAction;
 
                 % Add reward for incorrect action (stochastic environment)
                 if k < 3
@@ -103,11 +103,11 @@ while ~converged
                         jNew = j;
                     end
 
-                    reward = reward + previousUtilities(iNew, jNew) * probabilityWrongAction;
+                    reward = reward + previousV(iNew, jNew) * probabilityWrongAction;
                 end
 
                 % Update the utility
-                utilities(i, j) = rewardPerTimeStep + discountFactor * reward;
+                v(i, j) = rewardPerTimeStep + discountFactor * reward;
             end
         end
     end
@@ -133,7 +133,7 @@ while ~converged
                         jNew = j;
                     end
 
-                    reward = utilities(iNew, jNew) * probabilityCorrectAction;
+                    reward = v(iNew, jNew) * probabilityCorrectAction;
 
                     % Add reward for incorrect action (stochastic environment)
                     if k < 3
@@ -153,7 +153,7 @@ while ~converged
                             jNew = j;
                         end
 
-                        reward = reward + utilities(iNew, jNew) * probabilityWrongAction;
+                        reward = reward + v(iNew, jNew) * probabilityWrongAction;
                     end
 
                     % Save reward in maxReward if best action
