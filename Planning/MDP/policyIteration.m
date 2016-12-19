@@ -1,35 +1,8 @@
 % Include utils
-addpath('../utils');
+addpath('../../utils');
 
-% Create a maze
-maze = [
-            true, true, true, false
-            true, false, true, false
-            true, true, true, true
-       ];
-    
-actions = [
-               0, 1 % Right
-               0, -1 % Left
-               -1, 0 % Up
-               1, 0 % Down
-          ]; 
-
-discountFactor = 0.9;
-probabilityCorrectAction = 0.8;
-probabilityWrongAction = 0.1; % 2 possible incorrect actions (right angle)
-rewardPerTimeStep = -0.04;
-tolerance = 1e-5;
-unicodeSymbolsForActions = {0, 8594, 8592, 8593, 8595}; % Unicode values for symbols to be used in visualization
-       
-% Define the value function
-v = [
-        0, 0, 0, 1
-        0, 0, 0, -1
-        0, 0, 0, 0
-    ];
-        
-previousV = zeros(size(maze));
+% Setup environment
+setupEnvironment;
 
 % Define random policy
 policy = randi([1, size(actions, 1)], size(maze));
@@ -44,10 +17,6 @@ while ~converged
     close all;
     plotValues(v, strcat(['Value Function (', num2str(iterations), ' iterations)']));
     plotValues(policy, strcat(['Policy (', num2str(iterations), ' iterations)']), unicodeSymbolsForActions);
-    w = waitforbuttonpress; % 0 for button click and 1 for key press
-    if w == 1
-        break;
-    end
     
     % Check if the algorithm converged (policy remains constant)
     if isequal(policy, previousPolicy)
@@ -59,6 +28,12 @@ while ~converged
 %         converged = true;
 %         break;
 %     end
+
+    % Stop the algorithm if user pressed a button
+    w = waitforbuttonpress; % 0 for button click and 1 for key press
+    if w == 1
+        break;
+    end
     
     % Use previous v for calculation
     previousV = v;
@@ -107,7 +82,7 @@ while ~converged
                     reward = reward + previousV(iNew, jNew) * probabilityWrongAction;
                 end
 
-                % Update the utility
+                % Update v using Bellman expectation equation
                 v(i, j) = rewardPerTimeStep + discountFactor * reward;
             end
         end
@@ -174,7 +149,7 @@ while ~converged
 end
 
 if converged
-    fprintf('Value iteration algorithm converged to the solution in %d iterations\n', iterations);
+    fprintf('Policy iteration algorithm converged to the solution in %d iterations\n', iterations);
 else
     fprintf('Process interrupted by user after %d iterations\n', iterations);
 end

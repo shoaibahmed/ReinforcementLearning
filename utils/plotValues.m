@@ -1,10 +1,11 @@
 function plotValues(value, titleText, symbols)
-    % customColorMap = [1, 1, 1; 0.5, 0, 0.5];
     customColorMap = zeros(128, 3);
-    customColorMap(:, 1) = linspace(1, 1, 128);
-    customColorMap(:, 2) = linspace(1, 0, 128);
-    customColorMap(:, 3) = linspace(1, 0, 128);
-
+    
+    % 238,130,238 (Violet)
+    customColorMap(:, 1) = linspace(1, 238 / 256, 128);
+    customColorMap(:, 2) = linspace(1, 130 / 256, 128);
+    customColorMap(:, 3) = linspace(1, 238 / 256, 128);
+    
     figure;
     imagesc(value);
     % colormap customColorMap;

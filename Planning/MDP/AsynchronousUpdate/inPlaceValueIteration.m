@@ -1,35 +1,9 @@
 % Include utils
-addpath('../utils');
+addpath('../../../utils');
 
-% Create a maze
-maze = [
-            true, true, true, false
-            true, false, true, false
-            true, true, true, true
-       ];
-    
-actions = [
-               0, 1 % Right
-               0, -1 % Left
-               1, 0 % Up
-               -1, 0 % Down
-          ]; 
+% Setup environment
+setupEnvironment;
 
-discountFactor = 0.5;
-probabilityCorrectAction = 0.8;
-probabilityWrongAction = 0.1; % 2 possible incorrect actions (right angle)
-rewardPerTimeStep = -0.04;
-tolerance = 1e-5;
-       
-% Define the value function
-v = [
-        0, 0, 0, 1
-        0, 0, 0, -1
-        0, 0, 0, 0
-    ];
-        
-previousV = zeros(size(maze));
-        
 % Perform value iteration
 converged = false;
 iterations = 0;
@@ -37,11 +11,7 @@ while ~converged
     % Visualize the value function
     close all;
     plotValues(v, strcat(['Value Function (', num2str(iterations), ' iterations)']));
-    w = waitforbuttonpress; % 0 for button click and 1 for key press
-    if w == 1
-        break;
-    end
-    
+        
     % Check if the algorithm converged
     delta = abs(previousV - v);
     if sum(delta(:)) < tolerance
@@ -49,10 +19,16 @@ while ~converged
         break;
     end
     
-    % Use previous v for calculation
+    % Stop the algorithm if user pressed a button
+    w = waitforbuttonpress; % 0 for button click and 1 for key press
+    if w == 1
+        break;
+    end
+    
+    % Store for testing convergence
     previousV = v;
     
-    % Update the utlities
+    % Update the state value function
     % Iterate over the complete maze
     for i = 1 : size(maze, 1)
         for j = 1 : size(maze, 2)
@@ -72,7 +48,7 @@ while ~converged
                         jNew = j;
                     end
 
-                    reward = previousV(iNew, jNew) * probabilityCorrectAction;
+                    reward = v(iNew, jNew) * probabilityCorrectAction;
 
                     % Add reward for incorrect action (stochastic environment)
                     if k < 3
@@ -92,7 +68,7 @@ while ~converged
                             jNew = j;
                         end
 
-                        reward = reward + previousV(iNew, jNew) * probabilityWrongAction;
+                        reward = reward + v(iNew, jNew) * probabilityWrongAction;
                     end
 
                     % Save reward in maxReward if best action
@@ -101,7 +77,7 @@ while ~converged
                     end
                 end
 
-                % Update the utility
+                % Update v using Bellman optimality equation
                 v(i, j) = rewardPerTimeStep + discountFactor * maxReward;
             end
         end
@@ -115,3 +91,49 @@ if converged
 else
     fprintf('Process interrupted by user after %d iterations\n', iterations);
 end
+
+% Develop the final policy according to the value function
+policy = randi([1, size(actions, 1)], size(maze));
+policy(~maze) = 0;
+
+% Iterate over the complete maze
+for i = 1 : size(maze, 1)
+    for j = 1 : size(maze, 2)
+        % Only update values specified locations
+        if maze(i, j)
+            % Iterate over all the actions
+            maxReward = -realmax;
+            bestAction = -1;
+            for k = 1 : size(actions, 1)
+                % Add reward for correct action
+                action = actions(k, :);
+                iNew = i + action(1);
+                jNew = j + action(2);
+
+                if (iNew > size(maze, 1)) || (iNew < 1)
+                    iNew = i;
+                elseif (jNew > size(maze, 2)) || (jNew < 1)
+                    jNew = j;
+                end
+
+                % Don't update state for blocked cells (Win and Lose states are also blocked but don't have zero value)
+                if maze(iNew, jNew) || (~maze(iNew, jNew) && (v(iNew, jNew) ~= 0))
+                    reward = v(iNew, jNew);
+
+                    % Save reward in maxReward if best action
+                    if reward > maxReward
+                        maxReward = reward;
+                        bestAction = k;
+                    end
+                end
+            end
+
+            % Update the policy
+            policy(i, j) = bestAction;
+        end
+    end
+end
+
+% Visualize the policy obtained by acting greedily with respect to the obtained value function
+unicodeSymbolsForActions = {0, 8594, 8592, 8593, 8595}; % Unicode values for symbols to be used in visualization
+plotValues(policy, 'Policy', unicodeSymbolsForActions);

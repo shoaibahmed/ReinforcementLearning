@@ -1,33 +1,8 @@
 % Include utils
-addpath('../utils');
+addpath('../../utils');
 
-% Create a maze
-maze = [
-            true, true, true, false
-            true, false, true, false
-            true, true, true, true
-       ];
-    
-actions = [
-               0, 1 % Right
-               0, -1 % Left
-               1, 0 % Up
-               -1, 0 % Down
-          ]; 
-
-discountFactor = 0.5;
-probabilityForMoveInEachDirection = 1 / size(actions, 1); % 4 possible directions to move in
-rewardPerTimeStep = -0.04;
-tolerance = 1e-5;
-       
-% Define the value function
-v = [
-        0, 0, 0, 1
-        0, 0, 0, -1
-        0, 0, 0, 0
-    ];
-        
-previousV = zeros(size(maze));
+% Setup environment
+setupEnvironment;
         
 % Perform value iteration
 converged = false;
@@ -36,10 +11,6 @@ while ~converged
     % Visualize the value function
     close all;
     plotValues(v, strcat(['Value Function (', num2str(iterations), ' iterations)']));
-    w = waitforbuttonpress; % 0 for button click and 1 for key press
-    if w == 1
-        break;
-    end
     
     % Check if the algorithm converged
     delta = abs(previousV - v);
@@ -47,11 +18,17 @@ while ~converged
         converged = true;
         break;
     end
+
+    % Stop the algorithm if user pressed a button
+    w = waitforbuttonpress; % 0 for button click and 1 for key press
+    if w == 1
+        break;
+    end
     
     % Use previous v for calculation
     previousV = v;
     
-    % Update the utlities
+    % Update the state value function
     % Iterate over the complete maze
     for i = 1 : size(maze, 1)
         for j = 1 : size(maze, 2)
