@@ -18,7 +18,7 @@ actions = [
                1, 0 % Down
           ]; 
 
-discountFactor = 0.9;
+discountFactor = 0.9; % Gamma
 probabilityCorrectAction = 0.8;
 probabilityWrongAction = 0.1; % 2 possible incorrect actions (right angle)
 probabilityForMoveInEachDirection = 1 / size(actions, 1); % 4 possible directions to move in

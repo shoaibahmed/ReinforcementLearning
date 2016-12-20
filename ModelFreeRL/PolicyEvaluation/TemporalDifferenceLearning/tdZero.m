@@ -3,7 +3,7 @@ addpath('../../../utils');
 
 % Setup environment
 setupEnvironment;
-learningRate = 0.1;
+learningRate = 0.1; % Alpha
 
 % Define random policy
 policy = randi([1, size(actions, 1)], size(maze));
